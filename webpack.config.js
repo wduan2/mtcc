@@ -54,8 +54,8 @@ module.exports = {
                 test: /\.css$/,
                 use: [
                     MiniCssExtractPlugin.loader,
-                    // load css as module
-                    'css-loader?modules&sourceMap&localIdentName="[name]__[local]__[hash:base64:5]"'
+                    // not load css as module, since it will block default styles of libs (react-tabs)
+                    'css-loader?sourceMap&localIdentName="[name]__[local]__[hash:base64:5]"'
                 ]
             }
         ]
