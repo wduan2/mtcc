@@ -41,8 +41,12 @@ export const getStaffs = () => {
     return database.collection('staff').get()
 }
 
-export const setStaff = (name, serviceIds, active, id = shortid.generate()) => {
-    let staff = Staff(id, name, serviceIds, true)
+export const getStaffById = (staffId) => {
+    return database.collection('staff').where('id', '==', staffId).get()
+}
+
+export const setStaff = (name, id = shortid.generate()) => {
+    let staff = Staff(id, name)
     staff.updatedAt = firebase.firestore.FieldValue.serverTimestamp()
 
     return database.collection('staff')
@@ -61,18 +65,18 @@ export const getSchedules = () => {
     return database.collection('schedule').get()
 }
 
-export const setSchedule = (staffId, day, start, end) => {
+export const setSchedule = (staffId, day, start, end, id = shortid.generate()) => {
     let schedule = Schedule(staffId, day, start, end)
     schedule.updatedAt = firebase.firestore.FieldValue.serverTimestamp()
 
     return database.collection('schedule')
-        .doc(staffId)
+        .doc(id)
         .set(schedule)
 }
 
-export const delSchedule = (staffId) => {
+export const delSchedule = (id) => {
     return database.collection('schedule')
-        .doc(staffId)
+        .doc(id)
         .delete()
     // appointment
 }

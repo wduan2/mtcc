@@ -27,22 +27,10 @@ export default class AdminService extends React.Component {
     }
 
     tableColumns = [
-        {
-            Header: 'id',
-            accessor: 'id'
-        },
-        {
-            Header: 'group',
-            accessor: 'group'
-        },
-        {
-            Header: 'name',
-            accessor: 'name'
-        },
-        {
-            Header: 'duration',
-            accessor: 'duration'
-        }
+        { Header: 'id', accessor: 'id' },
+        { Header: 'group', accessor: 'group' },
+        { Header: 'name', accessor: 'name' },
+        { Header: 'duration', accessor: 'duration' }
     ]
 
     componentDidMount() {
@@ -58,13 +46,8 @@ export default class AdminService extends React.Component {
 
     updateServiceList() {
         adminActions.getServices().then((querySnapshot) => {
-            const serviceList = []
-            querySnapshot.forEach((doc) => {
-                serviceList.push(doc.data())
-            })
-            this.setState({
-                serviceList: serviceList
-            })
+            const serviceList = querySnapshot.docs.map((doc) => doc.data())
+            this.setState({ serviceList: serviceList })
         }).catch((e) => {
             console.error(e)
         })
@@ -127,16 +110,16 @@ export default class AdminService extends React.Component {
                                     <label> Service Group:</label>
                                     <input type="text" name='setServiceGroup' value={this.state.setServiceGroup} onChange={this.handleSetServiceChange} />
                                 </li>
-                                <li style={{ listStyle: 'none' }}>
+                                <li style={{ listStyle: 'none', display: this.state.setServiceGroup ? 'block' : 'none' }}>
                                     <label> Service Name:</label>
                                     <input type="text" name='setServiceName' value={this.state.setServiceName} onChange={this.handleSetServiceChange} />
                                 </li>
-                                <li style={{ listStyle: 'none' }}>
+                                <li style={{ listStyle: 'none', display: this.state.setServiceGroup && this.state.setServiceName ? 'block' : 'none' }}>
                                     <label> Service Duraiton:</label>
                                     <input type="text" name='setServiceDuration' value={this.state.setServiceDuration} onChange={this.handleSetServiceChange} />
                                 </li>
                             </ol>
-                            <input disabled={!this.state.submitEnabled} type='submit' value='set' />
+                            <input disabled={!this.state.submitEnabled || !this.state.setServiceGroup || !this.state.setServiceName || !this.state.setServiceDuration} type='submit' value='set' />
                         </form>
                     </div>
                     <div id='delService'>
@@ -149,7 +132,7 @@ export default class AdminService extends React.Component {
                                     onChange={this.handleDelServiceChange}
                                 />
                             </div>
-                            <button disabled={!this.state.submitEnabled} onClick={this.handleDelServiceSubmit}>delete</button>
+                            <button disabled={!this.state.submitEnabled || !this.state.delServiceId} onClick={this.handleDelServiceSubmit}>delete</button>
                         </form>
                     </div>
                 </div>
