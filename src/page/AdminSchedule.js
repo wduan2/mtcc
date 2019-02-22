@@ -1,46 +1,68 @@
+import Button from '@material-ui/core/Button';
+import FormControl from '@material-ui/core/FormControl';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import { withStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
 import React from 'react';
-import Select from 'react-select';
-import ReactTable from 'react-table';
 import * as adminActions from '../data/admin';
+import CustomPaginationActionsTable from './Table';
+import Grid from '@material-ui/core/Grid';
 
 
-export default class AdminSchedule extends React.Component {
+const styles = (theme) => ({
+    container: {
+        display: 'flex',
+        flexWrap: 'wrap',
+    },
+    formControl: {
+        margin: theme.spacing.unit,
+        minWidth: 120,
+    },
+    selectEmpty: {
+        marginTop: theme.spacing.unit * 2,
+    },
+    button: {
+        margin: theme.spacing.unit,
+    },
+    textField: {
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit,
+        width: 200,
+    },
+});
+
+class AdminSchedule extends React.Component {
     constructor(props) {
         super(props);
 
         this.handleSetScheduleSubmit = this.handleSetScheduleSubmit.bind(this)
-        this.handleDelScheduleSubmit = this.handleDelScheduleSubmit.bind(this)
-        this.handleSetScheduleChange = this.handleSetScheduleChange.bind(this)
-        this.handleDelScheduleChange = this.handleDelScheduleChange.bind(this)
-        this.handleSetScheduleOption = this.handleSetScheduleOption.bind(this)
-        this.state = {
-            ...this.defaultInputValues,
-            schedules: [],
-            staffs: [],
-            days: ['Monday', 'Tuesday', 'Wednesday', 'Thrusday', 'Friday', 'Saturday', 'Sunday'],
-            submitEnabled: true
-        }
+        this.handleOptionSelected = this.handleOptionSelected.bind(this)
     }
 
-    defaultInputValues = {
+    state = {
         setStaffId: '',
         setDay: '',
-        setStart: '',
-        setEnd: '',
-        delScheduleId: ''
+        setStart: '10:00',
+        setEnd: '20:00',
+        schedules: [],
+        staffs: [],
+        submitEnabled: true
     }
 
-    tableColumns = [
-        { Header: 'staffId', accessor: 'staffId' },
-        { Header: 'staffName', accessor: 'staffName' },
-        { Header: 'Monday', accessor: 'mondaySchedule' },
-        { Header: 'Tuesday', accessor: 'tuesdaySchedule' },
-        { Header: 'Wednesday', accessor: 'wednesdaySchedule' },
-        { Header: 'Thrusday', accessor: 'thrusdaySchedule' },
-        { Header: 'Friday', accessor: 'fridaySchedule' },
-        { Header: 'Saturday', accessor: 'saturdaySchedule' },
-        { Header: 'Sunday', accessor: 'sundaySchedule' },
-    ]
+    resetState() {
+        this.setState({
+            setStaffId: '',
+            setDay: '',
+            setStart: '10:00',
+            setEnd: '20:00'
+        })
+    }
+
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thrusday', 'Friday', 'Saturday', 'Sunday']
+
+    tableHeaders = ['Staff Id', 'Staff Name', ...this.days]
 
     componentDidMount() {
         this.updateScheduleList()
@@ -55,22 +77,24 @@ export default class AdminSchedule extends React.Component {
     updateScheduleList() {
         adminActions.getStaffs().then((querySnapshot) => {
             const staffs = {}
+            const schedules = {}
             querySnapshot.forEach((doc) => {
                 const staff = doc.data()
                 staffs[staff.id] = staff
+
+                // make sure the order of assigning match the order of headers
+
+                schedules[staff.id] = { id: staff.id, staffName: staff.name }
+                this.days.forEach((day) => schedules[staff.id][day] = '')
             })
             this.setState({ staffs: staffs })
 
             adminActions.getSchedules().then((querySnapshot) => {
-                const schedules = {}
                 querySnapshot.forEach((doc) => {
                     const schedule = doc.data()
-                    schedules[schedule.staffId] = schedules[schedule.staffId] || {}
-                    schedules[schedule.staffId][schedule.day] = schedules[schedule.staffId][schedule.day] || {}
-                    schedules[schedule.staffId][schedule.day] = { ...schedule }
-                    schedules[schedule.staffId]['staffId'] = schedule.staffId
-                    schedules[schedule.staffId]['staffName'] = this.state.staffs[schedule.staffId]
+                    schedules[schedule.staffId][schedule.day] = `${schedule.start} - ${schedule.end}`
                 })
+
                 this.setState({
                     schedules: schedules
                 })
@@ -80,20 +104,13 @@ export default class AdminSchedule extends React.Component {
         })
     }
 
-    handleSetScheduleOption(opt) {
-        this.setState({
-            [opt.name]: opt.value
-        })
-    }
-
-    handleSetScheduleChange(evt) {
+    handleOptionSelected(evt) {
         this.setState({
             [evt.target.name]: evt.target.value
         })
     }
 
     handleSetScheduleSubmit(evt) {
-        evt.preventDefault()
         this.setSubmitEnabledTo(false)
 
         const { setStaffId, setDay, setStart, setEnd } = this.state
@@ -102,28 +119,7 @@ export default class AdminSchedule extends React.Component {
             .then(() => {
                 this.updateScheduleList()
                 this.setSubmitEnabledTo(true)
-                this.setState(this.defaultInputValues)
-            })
-            .catch((e) => {
-                console.error(e)
-                this.setSubmitEnabledTo(true)
-            })
-    }
-
-    handleDelScheduleChange(opt) {
-        this.setState({
-            [opt.name]: opt.value
-        })
-    }
-
-    handleDelScheduleSubmit(evt) {
-        evt.preventDefault()
-        this.setSubmitEnabledTo(false)
-        adminActions.delSchedule(this.state.delScheduleId)
-            .then(() => {
-                this.updateScheduleList()
-                this.setSubmitEnabledTo(true)
-                this.setState(this.defaultInputValues)
+                this.resetState()
             })
             .catch((e) => {
                 console.error(e)
@@ -132,48 +128,94 @@ export default class AdminSchedule extends React.Component {
     }
 
     render() {
-        return (
-            <div>
-                <div style={{ width: '25%', float: 'left' }}>
-                    <div id='setSchedule'>
-                        <h3>Set Schedule</h3>
-                        <form onSubmit={this.handleSetScheduleSubmit}>
-                            <ol>
-                                <li style={{ listStyle: 'none' }}>
-                                    <label>Staff:</label>
-                                    <Select
-                                        options={Object.values(this.state.staffs).map((staff) => { return { value: staff.id, label: staff.name, name: 'setStaffId' } })}
-                                        onChange={this.handleSetScheduleOption}
-                                    />
-                                </li>
-                                <li style={{ listStyle: 'none', display: this.state.setStaffId ? 'block' : 'none' }}>
-                                    <label>Day:</label>
-                                    <Select
-                                        options={this.state.days.map((day) => { return { value: day, label: day, name: 'setDay' } })}
-                                        onChange={this.handleSetScheduleOption}
-                                    />
-                                </li>
-                                <li style={{ listStyle: 'none', display: this.state.setStaffId && this.state.setDay ? 'block' : 'none' }}>
-                                    <label>Start</label>
-                                    <input type="text" name='setStart' value={this.state.setStart} onChange={this.handleSetScheduleChange} />
-                                </li>
-                                <li style={{ listStyle: 'none', display: this.state.setStaffId && this.state.setDay && this.state.setStart ? 'block' : 'none' }}>
-                                    <label>End</label>
-                                    <input type="text" name='setEnd' value={this.state.setEnd} onChange={this.handleSetScheduleChange} />
-                                </li>
-                            </ol>
-                            <input disabled={!this.state.submitEnabled || !this.state.setStaffId || !this.state.setDay || !this.state.setStart || !this.state.setEnd} type='submit' value='set' />
-                        </form>
-                    </div>
-                </div>
+        const { classes } = this.props
+        const { setStaffId, setDay, setStart, setEnd, submitEnabled, staffs, schedules } = this.state
 
-                <div style={{ width: '75%', float: 'right' }}>
-                    <ReactTable
-                        columns={this.tableColumns}
-                        data={Object.values(this.state.schedules)}
-                    />
-                </div>
-            </div >
+        return (
+            <div className={classes.container}>
+                <Grid container spacing={16}>
+                    <Grid item xs={2}>
+                        <h3>Set Schedule</h3>
+                        <form className={classes.container} noValidate>
+                            <FormControl className={classes.formControl}>
+                                <InputLabel htmlFor="set-staff">Staff</InputLabel>
+                                <Select
+                                    displayEmpty
+                                    className={classes.selectEmpty}
+                                    inputProps={{
+                                        name: 'setStaffId',
+                                        id: 'set-staff',
+                                    }}
+                                    value={setStaffId}
+                                    onChange={this.handleOptionSelected}
+                                >
+                                    {Object.values(staffs).map((staff) => <MenuItem key={staff.id} value={staff.id}>{staff.name}</MenuItem>)}
+                                </Select>
+                            </FormControl>
+                            <FormControl className={classes.formControl}>
+                                <InputLabel htmlFor="set-day">Day</InputLabel>
+                                <Select
+                                    displayEmpty
+                                    className={classes.selectEmpty}
+                                    inputProps={{
+                                        name: 'setDay',
+                                        id: 'set-day',
+                                    }}
+                                    value={setDay}
+                                    onChange={this.handleOptionSelected}
+                                >
+                                    {this.days.map((day) => <MenuItem key={day} value={day}>{day}</MenuItem>)}
+                                </Select>
+                            </FormControl>
+                            <TextField
+                                name='setStart'
+                                label='Start Time'
+                                type='time'
+                                className={classes.textField}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                inputProps={{
+                                    step: 1800, // 30 min
+                                }}
+                                required={true}
+                                value={setStart}
+                                onChange={(this.handleOptionSelected)}
+                            />
+                            <TextField
+                                name='setEnd'
+                                label='End Time'
+                                type='time'
+                                className={classes.textField}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                inputProps={{
+                                    step: 1800, // 30 min
+                                }}
+                                required={true}
+                                value={setEnd}
+                                onChange={(this.handleOptionSelected)}
+                            />
+                            <Button
+                                variant='contained'
+                                color='primary'
+                                className={classes.button}
+                                disabled={!submitEnabled || !setStaffId || !setDay || !setStart || !setEnd}
+                                onClick={this.handleSetScheduleSubmit}
+                            >
+                                Set
+                            </Button>
+                        </form>
+                    </Grid>
+
+                    <Grid item xs={10}>
+                        <CustomPaginationActionsTable headers={this.tableHeaders} rows={Object.values(schedules)} />
+                    </Grid>
+                </Grid>
+            </div>
         )
     }
 }
+
+export default withStyles(styles)(AdminSchedule);

@@ -66,7 +66,7 @@ export const getSchedules = () => {
 }
 
 export const setSchedule = (staffId, day, start, end, id = shortid.generate()) => {
-    let schedule = Schedule(staffId, day, start, end)
+    let schedule = Schedule(id, staffId, day, start, end)
     schedule.updatedAt = firebase.firestore.FieldValue.serverTimestamp()
 
     return database.collection('schedule')

@@ -1,37 +1,65 @@
+import Button from '@material-ui/core/Button';
+import FormControl from '@material-ui/core/FormControl';
+import Grid from '@material-ui/core/Grid';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import { withStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
 import React from 'react';
-import Select from 'react-select';
-import ReactTable from 'react-table';
 import * as adminActions from '../data/admin';
+import CustomPaginationActionsTable from './Table';
 
+const styles = (theme) => ({
+    container: {
+        display: 'flex',
+        flexWrap: 'wrap',
+    },
+    formControl: {
+        margin: theme.spacing.unit,
+        minWidth: 120,
+    },
+    selectEmpty: {
+        marginTop: theme.spacing.unit * 2,
+    },
+    button: {
+        margin: theme.spacing.unit,
+    },
+    textField: {
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit,
+        width: 200,
+    },
+});
 
-export default class AdminService extends React.Component {
+class AdminService extends React.Component {
     constructor(props) {
         super(props);
 
         this.handleSetServiceSubmit = this.handleSetServiceSubmit.bind(this)
         this.handleDelServiceSubmit = this.handleDelServiceSubmit.bind(this)
-        this.handleSetServiceChange = this.handleSetServiceChange.bind(this)
-        this.handleDelServiceChange = this.handleDelServiceChange.bind(this)
-        this.state = {
-            ...this.defaultInputValues,
-            serviceList: [],
-            submitEnabled: true
-        }
+        this.handleOptionSelected = this.handleOptionSelected.bind(this)
     }
 
-    defaultInputValues = {
+    state = {
         setServiceName: '',
         setServiceGroup: '',
         setServiceDuration: '',
-        delServiceId: ''
+        delServiceId: '',
+        serviceList: [],
+        submitEnabled: true
     }
 
-    tableColumns = [
-        { Header: 'id', accessor: 'id' },
-        { Header: 'group', accessor: 'group' },
-        { Header: 'name', accessor: 'name' },
-        { Header: 'duration', accessor: 'duration' }
-    ]
+    resetState() {
+        this.setState({
+            setServiceName: '',
+            setServiceGroup: '',
+            setServiceDuration: '',
+            delServiceId: ''
+        })
+    }
+
+    tableHeaders = ['id', 'group', 'name', 'duration']
 
     componentDidMount() {
         // get service list
@@ -46,21 +74,27 @@ export default class AdminService extends React.Component {
 
     updateServiceList() {
         adminActions.getServices().then((querySnapshot) => {
-            const serviceList = querySnapshot.docs.map((doc) => doc.data())
+            const serviceList = querySnapshot.docs.map((doc) => {
+                const serviceData = doc.data()
+                const service = {}
+                this.tableHeaders.forEach((header) => {
+                    service[header] = serviceData[header]
+                })
+                return service
+            })
             this.setState({ serviceList: serviceList })
         }).catch((e) => {
             console.error(e)
         })
     }
 
-    handleSetServiceChange(evt) {
+    handleOptionSelected(evt) {
         this.setState({
             [evt.target.name]: evt.target.value
         })
     }
 
     handleSetServiceSubmit(evt) {
-        evt.preventDefault()
         this.setSubmitEnabledTo(false)
 
         const { setServiceGroup, setServiceName, setServiceDuration } = this.state
@@ -69,18 +103,12 @@ export default class AdminService extends React.Component {
             .then(() => {
                 this.updateServiceList()
                 this.setSubmitEnabledTo(true)
-                this.setState(this.defaultInputValues)
+                this.resetState()
             })
             .catch((e) => {
                 console.error(e)
                 this.setSubmitEnabledTo(true)
             })
-    }
-
-    handleDelServiceChange(opt) {
-        this.setState({
-            delServiceId: opt.value
-        })
     }
 
     handleDelServiceSubmit(evt) {
@@ -90,7 +118,7 @@ export default class AdminService extends React.Component {
             .then(() => {
                 this.updateServiceList()
                 this.setSubmitEnabledTo(true)
-                this.setState(this.defaultInputValues)
+                this.resetState()
             })
             .catch((e) => {
                 console.error(e)
@@ -99,50 +127,97 @@ export default class AdminService extends React.Component {
     }
 
     render() {
+        const { classes } = this.props
+        const { setServiceName, setServiceGroup, setServiceDuration, delServiceId, serviceList, submitEnabled } = this.state
+
         return (
-            <div>
-                <div style={{ width: '25%', float: 'left' }}>
-                    <div id='setService'>
+            <div className={classes.container}>
+                <Grid container spacing={16}>
+                    <Grid item xs={2}>
                         <h3>Set Service</h3>
-                        <form onSubmit={this.handleSetServiceSubmit}>
-                            <ol>
-                                <li style={{ listStyle: 'none' }}>
-                                    <label> Service Group:</label>
-                                    <input type="text" name='setServiceGroup' value={this.state.setServiceGroup} onChange={this.handleSetServiceChange} />
-                                </li>
-                                <li style={{ listStyle: 'none', display: this.state.setServiceGroup ? 'block' : 'none' }}>
-                                    <label> Service Name:</label>
-                                    <input type="text" name='setServiceName' value={this.state.setServiceName} onChange={this.handleSetServiceChange} />
-                                </li>
-                                <li style={{ listStyle: 'none', display: this.state.setServiceGroup && this.state.setServiceName ? 'block' : 'none' }}>
-                                    <label> Service Duraiton:</label>
-                                    <input type="text" name='setServiceDuration' value={this.state.setServiceDuration} onChange={this.handleSetServiceChange} />
-                                </li>
-                            </ol>
-                            <input disabled={!this.state.submitEnabled || !this.state.setServiceGroup || !this.state.setServiceName || !this.state.setServiceDuration} type='submit' value='set' />
+                        <form className={classes.container} noValidate>
+                            <TextField
+                                name='setServiceGroup'
+                                label='Service Group'
+                                type='text'
+                                className={classes.textField}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                required={true}
+                                value={setServiceGroup}
+                                onChange={(this.handleOptionSelected)}
+                            />
+                            <TextField
+                                name='setServiceName'
+                                label='Service Name'
+                                type='text'
+                                className={classes.textField}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                required={true}
+                                value={setServiceName}
+                                onChange={(this.handleOptionSelected)}
+                            />
+                            <TextField
+                                name='setServiceDuration'
+                                label='Service Duration'
+                                type='text'
+                                className={classes.textField}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                required={true}
+                                value={setServiceDuration}
+                                onChange={(this.handleOptionSelected)}
+                            />
+                            <Button
+                                variant='contained'
+                                color='primary'
+                                className={classes.button}
+                                disabled={!submitEnabled || !setServiceGroup || !setServiceName || !setServiceDuration}
+                                onClick={this.handleSetServiceSubmit}
+                            >
+                                Set
+                            </Button>
                         </form>
-                    </div>
-                    <div id='delService'>
-                        <h3>Delete Service</h3>
-                        <form onSubmit={this.handleChange}>
-                            <label> Service:</label>
-                            <div style={{ width: '50%' }}>
+
+                        {/* <h3>Delete Service</h3>
+                        <form>
+                            <FormControl className={classes.formControl}>
+                                <InputLabel htmlFor="del-service">Service</InputLabel>
                                 <Select
-                                    options={this.state.serviceList.map((s) => { return { value: s.id, label: s.name } })}
-                                    onChange={this.handleDelServiceChange}
-                                />
-                            </div>
-                            <button disabled={!this.state.submitEnabled || !this.state.delServiceId} onClick={this.handleDelServiceSubmit}>delete</button>
-                        </form>
-                    </div>
-                </div>
-                <div style={{ width: '75%', float: 'right' }}>
-                    <ReactTable
-                        columns={this.tableColumns}
-                        data={this.state.serviceList}
-                    />
-                </div>
+                                    displayEmpty
+                                    className={classes.selectEmpty}
+                                    inputProps={{
+                                        name: 'delServiceId',
+                                        id: 'del-service',
+                                    }}
+                                    value={delServiceId}
+                                    onChange={this.handleOptionSelected}
+                                >
+                                    {serviceList.map((service) => <MenuItem key={service.id} value={service.name}>{service.name}</MenuItem>)}
+                                </Select>
+                            </FormControl>
+                            <Button
+                                variant='contained'
+                                color='primary'
+                                className={classes.button}
+                                disabled={!submitEnabled || !delServiceId}
+                                onClick={this.handleDelServiceSubmit}
+                            >
+                                Delete
+                            </Button>
+                        </form> */}
+                    </Grid>
+                    <Grid item xs={10}>
+                        <CustomPaginationActionsTable headers={this.tableHeaders} rows={serviceList} />
+                    </Grid>
+                </Grid>
             </div >
         )
     }
 }
+
+export default withStyles(styles)(AdminService);
