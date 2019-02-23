@@ -27,16 +27,24 @@ export const Staff = (id, name, serviceIds = [], removed = false) => {
     }
 }
 
-export const Appointment = (id, date, start, end, serviceId, staffId, canceled, staffRemoved, serviceRemoved) => {
-    return {
+export const Appointment = (id, customerName, customerEmail, customerPhone, date, start, end, serviceId, staffId = null, canceled = false, staffRemoved = false, serviceRemoved = false) => {
+    const appontment = {
         id: id,
+        customerName: customerName,
+        customerEmail: customerEmail,
+        customerPhone: customerPhone,
         date: date,
         start: start,
         end: end,
         serviceId: serviceId,
-        staffId: staffId,
         canceled: canceled,
         staffRemoved: staffRemoved,
         serviceRemoved: serviceRemoved
     }
+
+    if (staffId) {
+        appontment['staffId'] = staffId
+    }
+
+    return appontment
 }

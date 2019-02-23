@@ -1,14 +1,14 @@
+import AppBar from '@material-ui/core/AppBar';
+import { withStyles } from '@material-ui/core/styles';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+import Typography from '@material-ui/core/Typography';
 import React from 'react';
 import AdminAppointment from './AdminAppointment';
 import AdminSchedule from './AdminSchedule';
 import AdminService from './AdminService';
 import AdminStaff from './AdminStaff';
-import { withStyles } from '@material-ui/core/styles';
 
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
 
 function TabContainer(props) {
     return (
@@ -46,7 +46,7 @@ class Admin extends React.Component {
                         <Tab label='Service' />
                         <Tab label='Schedule' />
                         <Tab label='Staff' />
-                        <Tab label='SeStaffrvice' />
+                        <Tab label='Appointment' />
                     </Tabs>
                 </AppBar>
                 {tabIndex === 0 && <TabContainer><AdminService /></TabContainer>}

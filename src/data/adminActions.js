@@ -99,4 +99,3 @@ export const delAppointment = (id) => {
         .doc(id)
         .delete()
 }
-

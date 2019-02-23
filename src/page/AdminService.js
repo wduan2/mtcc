@@ -7,7 +7,7 @@ import Select from '@material-ui/core/Select';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import React from 'react';
-import * as adminActions from '../data/admin';
+import * as adminActions from '../data/adminActions';
 import CustomPaginationActionsTable from './Table';
 
 const styles = (theme) => ({

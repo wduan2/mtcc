@@ -1,14 +1,14 @@
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
+import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import React from 'react';
-import * as adminActions from '../data/admin';
+import * as adminActions from '../data/adminActions';
 import CustomPaginationActionsTable from './Table';
-import Grid from '@material-ui/core/Grid';
 
 
 const styles = (theme) => ({
@@ -47,7 +47,7 @@ class AdminSchedule extends React.Component {
         setStart: '10:00',
         setEnd: '20:00',
         schedules: [],
-        staffs: [],
+        staffList: [],
         submitEnabled: true
     }
 
@@ -65,7 +65,7 @@ class AdminSchedule extends React.Component {
     tableHeaders = ['Staff Id', 'Staff Name', ...this.days]
 
     componentDidMount() {
-        this.updateScheduleList()
+        this.updateSchedules()
     }
 
     setSubmitEnabledTo(value = false) {
@@ -74,20 +74,19 @@ class AdminSchedule extends React.Component {
         })
     }
 
-    updateScheduleList() {
+    updateSchedules() {
         adminActions.getStaffs().then((querySnapshot) => {
-            const staffs = {}
+            const staffList = []
             const schedules = {}
             querySnapshot.forEach((doc) => {
                 const staff = doc.data()
-                staffs[staff.id] = staff
+                staffList.push(staff)
 
                 // make sure the order of assigning match the order of headers
 
                 schedules[staff.id] = { id: staff.id, staffName: staff.name }
                 this.days.forEach((day) => schedules[staff.id][day] = '')
             })
-            this.setState({ staffs: staffs })
 
             adminActions.getSchedules().then((querySnapshot) => {
                 querySnapshot.forEach((doc) => {
@@ -96,6 +95,7 @@ class AdminSchedule extends React.Component {
                 })
 
                 this.setState({
+                    staffList: staffList,
                     schedules: schedules
                 })
             }).catch((e) => {
@@ -117,7 +117,7 @@ class AdminSchedule extends React.Component {
 
         adminActions.setSchedule(setStaffId, setDay, setStart, setEnd)
             .then(() => {
-                this.updateScheduleList()
+                this.updateSchedules()
                 this.setSubmitEnabledTo(true)
                 this.resetState()
             })
@@ -129,7 +129,7 @@ class AdminSchedule extends React.Component {
 
     render() {
         const { classes } = this.props
-        const { setStaffId, setDay, setStart, setEnd, submitEnabled, staffs, schedules } = this.state
+        const { setStaffId, setDay, setStart, setEnd, submitEnabled, staffList, schedules } = this.state
 
         return (
             <div className={classes.container}>
@@ -149,7 +149,7 @@ class AdminSchedule extends React.Component {
                                     value={setStaffId}
                                     onChange={this.handleOptionSelected}
                                 >
-                                    {Object.values(staffs).map((staff) => <MenuItem key={staff.id} value={staff.id}>{staff.name}</MenuItem>)}
+                                    {staffList.map((staff) => <MenuItem key={staff.id} value={staff.id}>{staff.name}</MenuItem>)}
                                 </Select>
                             </FormControl>
                             <FormControl className={classes.formControl}>
