@@ -45,6 +45,7 @@ class AdminService extends React.Component {
         setServiceName: '',
         setServiceGroup: '',
         setServiceDuration: '',
+        setServicePrice: '',
         delServiceId: '',
         serviceList: [],
         submitEnabled: true
@@ -55,11 +56,12 @@ class AdminService extends React.Component {
             setServiceName: '',
             setServiceGroup: '',
             setServiceDuration: '',
+            setServicePrice: '',
             delServiceId: ''
         })
     }
 
-    tableHeaders = ['id', 'group', 'name', 'duration']
+    tableHeaders = ['id', 'group', 'name', 'duration', 'price']
 
     componentDidMount() {
         // get service list
@@ -97,9 +99,9 @@ class AdminService extends React.Component {
     handleSetServiceSubmit(evt) {
         this.setSubmitEnabledTo(false)
 
-        const { setServiceGroup, setServiceName, setServiceDuration } = this.state
+        const { setServiceGroup, setServiceName, setServiceDuration, setServicePrice } = this.state
 
-        adminActions.setService(setServiceGroup, setServiceName, setServiceDuration)
+        adminActions.setService(setServiceGroup, setServiceName, setServiceDuration, setServicePrice)
             .then(() => {
                 this.updateServiceList()
                 this.setSubmitEnabledTo(true)
@@ -112,7 +114,6 @@ class AdminService extends React.Component {
     }
 
     handleDelServiceSubmit(evt) {
-        evt.preventDefault()
         this.setSubmitEnabledTo(false)
         adminActions.delService(this.state.delServiceId)
             .then(() => {
@@ -128,7 +129,7 @@ class AdminService extends React.Component {
 
     render() {
         const { classes } = this.props
-        const { setServiceName, setServiceGroup, setServiceDuration, delServiceId, serviceList, submitEnabled } = this.state
+        const { setServiceName, setServiceGroup, setServiceDuration, setServicePrice, delServiceId, serviceList, submitEnabled } = this.state
 
         return (
             <div className={classes.container}>
@@ -172,6 +173,18 @@ class AdminService extends React.Component {
                                 value={setServiceDuration}
                                 onChange={(this.handleOptionSelected)}
                             />
+                            <TextField
+                                name='setServicePrice'
+                                label='Service Price'
+                                type='text'
+                                className={classes.textField}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                required={true}
+                                value={setServicePrice}
+                                onChange={(this.handleOptionSelected)}
+                            />
                             <Button
                                 variant='contained'
                                 color='primary'
@@ -183,7 +196,7 @@ class AdminService extends React.Component {
                             </Button>
                         </form>
 
-                        {/* <h3>Delete Service</h3>
+                        <h3>Remove Service</h3>
                         <form>
                             <FormControl className={classes.formControl}>
                                 <InputLabel htmlFor="del-service">Service</InputLabel>
@@ -207,9 +220,9 @@ class AdminService extends React.Component {
                                 disabled={!submitEnabled || !delServiceId}
                                 onClick={this.handleDelServiceSubmit}
                             >
-                                Delete
+                                Remove
                             </Button>
-                        </form> */}
+                        </form>
                     </Grid>
                     <Grid item xs={10}>
                         <CustomPaginationActionsTable headers={this.tableHeaders} rows={serviceList} />

@@ -43,16 +43,16 @@ class Admin extends React.Component {
             <div className={classes.root}>
                 <AppBar position='static'>
                     <Tabs value={tabIndex} onChange={this.handleChange}>
-                        <Tab label='Service' />
-                        <Tab label='Schedule' />
-                        <Tab label='Staff' />
                         <Tab label='Appointment' />
+                        <Tab label='Service' />
+                        <Tab label='Staff' />
+                        <Tab label='Schedule' />
                     </Tabs>
                 </AppBar>
-                {tabIndex === 0 && <TabContainer><AdminService /></TabContainer>}
-                {tabIndex === 1 && <TabContainer><AdminSchedule /></TabContainer>}
+                {tabIndex === 0 && <TabContainer><AdminAppointment /></TabContainer>}
+                {tabIndex === 1 && <TabContainer><AdminService /></TabContainer>}
                 {tabIndex === 2 && <TabContainer><AdminStaff /></TabContainer>}
-                {tabIndex === 3 && <TabContainer><AdminAppointment /></TabContainer>}
+                {tabIndex === 3 && <TabContainer><AdminSchedule /></TabContainer>}
             </div>
         )
     }

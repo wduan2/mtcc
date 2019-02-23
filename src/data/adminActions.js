@@ -21,8 +21,8 @@ export const getServices = () => {
     return database.collection('service').get()
 }
 
-export const setService = (group, name, duration, id = shortid.generate()) => {
-    let service = Service(id, group, name, duration)
+export const setService = (group, name, duration, price, id = shortid.generate()) => {
+    let service = Service(id, group, name, duration, price)
     service.updatedAt = firebase.firestore.FieldValue.serverTimestamp()
 
     return database.collection('service')
@@ -33,8 +33,10 @@ export const setService = (group, name, duration, id = shortid.generate()) => {
 export const delService = (id) => {
     return database.collection('service')
         .doc(id)
-        .delete()
-    // staff, appointment
+        .update({
+            'removed': true
+        })
+    // TODO: update appointments
 }
 
 export const getStaffs = () => {
@@ -57,8 +59,10 @@ export const setStaff = (name, id = shortid.generate()) => {
 export const delStaff = (id) => {
     return database.collection('staff')
         .doc(id)
-        .delete()
-    // appointment
+        .update({
+            'removed': true
+        })
+    // TODO: update appointments
 }
 
 export const getSchedules = () => {
@@ -74,19 +78,19 @@ export const setSchedule = (staffId, day, start, end, id = shortid.generate()) =
         .set(schedule)
 }
 
-export const delSchedule = (id) => {
-    return database.collection('schedule')
-        .doc(id)
-        .delete()
-    // appointment
-}
-
 export const getAppointments = () => {
     return database.collection('appointment').get()
 }
 
-export const setAppointment = (date, start, end, serviceId, staffId, id = shortid.generate()) => {
-    let appointment = Appointment(id, date, start, end, serviceId, staffId, false, false, false)
+export const getAppointmentByDate = (date) => {
+    return database.collection('appointment')
+        .where('date', '==', date)
+        .get()
+}
+
+export const setAppointment = (customerName, customerEmail, customerPhone, date, start, end, serviceId, staffId, id = shortid.generate()) => {
+    let appointment = Appointment(id, customerName, customerEmail, customerPhone, date, start, end, serviceId, staffId, false, false, false)
+    
     appointment.updatedAt = firebase.firestore.FieldValue.serverTimestamp()
 
     return database.collection('appointment')
@@ -97,5 +101,7 @@ export const setAppointment = (date, start, end, serviceId, staffId, id = shorti
 export const delAppointment = (id) => {
     return database.collection('appointment')
         .doc(id)
-        .delete()
+        .update({
+            'canceled': true
+        })
 }

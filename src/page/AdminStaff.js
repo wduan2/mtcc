@@ -154,7 +154,7 @@ class AdminStaff extends React.Component {
                             </Button>
                         </form>
 
-                        {/* <h3>Delete Staff</h3>
+                        <h3>Remove Staff</h3>
                         <form onSubmit={this.handleChange}>
                             <FormControl className={classes.formControl}>
                                 <InputLabel htmlFor="del-staff">Staff</InputLabel>
@@ -178,9 +178,9 @@ class AdminStaff extends React.Component {
                                 disabled={!submitEnabled || !delStaffId}
                                 onClick={this.handleDelStaffSubmit}
                             >
-                                Delete
+                                Remove
                             </Button>
-                        </form> */}
+                        </form>
                     </Grid>
                     <Grid item xs={10}>
                         <CustomPaginationActionsTable headers={this.tableHeaders} rows={staffList} />

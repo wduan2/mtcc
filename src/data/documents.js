@@ -8,12 +8,13 @@ export const Schedule = (id, staffId, day, start, end) => {
     }
 }
 
-export const Service = (id, group, name, duration, removed = false) => {
+export const Service = (id, group, name, duration, price = 50, removed = false) => {
     return {
         id: id,
         group: group,
         name: name,
         duration: duration,
+        price: price,
         removed: removed
     }
 }
@@ -36,6 +37,7 @@ export const Appointment = (id, customerName, customerEmail, customerPhone, date
         date: date,
         start: start,
         end: end,
+        // TODO: change to list
         serviceId: serviceId,
         canceled: canceled,
         staffRemoved: staffRemoved,
