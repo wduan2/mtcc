@@ -321,6 +321,7 @@ class AdminAppointment extends React.Component {
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
+                                InputProps={{ inputProps: { min: moment().format('YYYY-MM-DD') }}}
                                 value={setDate}
                                 onChange={(this.handleOptionSelected)}
                             />
@@ -420,7 +421,6 @@ class AdminAppointment extends React.Component {
                                 width={(isMobile()) ? window.innerWidth * 0.9 : 650}
                                 height={window.innerHeight - 250}
                                 selected={today}
-                                minDate={today}
                                 onSelect={this.openAppointmentsToView}
                             />
                         </Grid>

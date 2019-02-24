@@ -5,7 +5,7 @@
   "scripts": {
     "build:dev": "webpack",
     "build": "NODE_ENV='production' webpack",
-    "deploy": "firebase deploy",
+    "deploy": "npm run build && firebase deploy",
     "start": "node_modules/.bin/webpack-dev-server"
   },
   "author": "",

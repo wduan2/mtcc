@@ -13,7 +13,7 @@ import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
 import React from 'react';
-
+import { isMobile } from './Screen';
 
 const actionsStyles = theme => ({
     root: {
@@ -112,6 +112,7 @@ class CustomPaginationActionsTable extends React.Component {
         rows: this.props.rows,
         page: 0,
         rowsPerPage: 5,
+        rowsPerPageOptions: isMobile() ? [5] : [5, 10, 25]
     };
 
     componentWillReceiveProps(nextProps) {
@@ -156,7 +157,7 @@ class CustomPaginationActionsTable extends React.Component {
                             <TableRow>
                                 <TablePagination
                                     classes={{ spacer: classes.spacer }}
-                                    rowsPerPageOptions={[5, 10, 25]}
+                                    rowsPerPageOptions={this.state.rowsPerPageOptions}
                                     colSpan={3}
                                     count={rows.length}
                                     rowsPerPage={rowsPerPage}
