@@ -1,7 +1,7 @@
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
-import Input from '@material-ui/core/Input';
+import Hidden from '@material-ui/core/Hidden';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
@@ -9,14 +9,18 @@ import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import moment from 'moment';
 import React from 'react';
+import InfiniteCalendar from 'react-infinite-calendar';
+import 'react-infinite-calendar/styles.css';
 import * as adminActions from '../data/adminActions';
 import * as calculateAvailability from '../data/calculateAvailability';
+import { isMobile } from './Screen';
 import { PhoneNumberMask } from './TextMask';
+import AppointmentSummary from './AppointmentSummary';
 
 const styles = (theme) => ({
     container: {
         display: 'flex',
-        flexWrap: 'wrap',
+        flexWrap: 'wrap'
     },
     formControl: {
         margin: theme.spacing.unit,
@@ -43,6 +47,8 @@ class AdminAppointment extends React.Component {
         super(props);
         this.handleOptionSelected = this.handleOptionSelected.bind(this)
         this.handleSetAppointmentSubmit = this.handleSetAppointmentSubmit.bind(this)
+        this.openAppointmentsToView = this.openAppointmentsToView.bind(this)
+        this.closeAppointmentsToView = this.closeAppointmentsToView.bind(this)
     }
 
     state = {
@@ -57,9 +63,12 @@ class AdminAppointment extends React.Component {
         availabilities: [],
         services: [],
         staffList: [],
-        allServices: [],
+        allServices: {},
         schedules: {},
         appointments: {},
+        appointmentsToView: {},
+        appointmentsToViewHeaders: [],
+        displayAppointmentsToView: false,
         submitEnabled: true
     }
 
@@ -87,23 +96,6 @@ class AdminAppointment extends React.Component {
     componentDidMount() {
         this.updateStoreInfo()
     }
-
-    // updateAppointmentList() {
-    //     adminActions.getAppointments().then((querySnapshot) => {
-    //         const appointments = {}
-    //         querySnapshot.forEach((doc) => {
-    //             const appointment = doc.data()
-    //             appointments[appointment.date] = appointments[appointment.date] || []
-    //             appointments[appointment.date].push(appointment)
-    //         })
-
-    //         this.setState({
-    //             appointments: appointments
-    //         })
-    //     }).catch((e) => {
-    //         console.error(e)
-    //     })
-    // }
 
     updateStoreInfo() {
         adminActions.getStaffs().then((querySnapshot) => {
@@ -215,15 +207,79 @@ class AdminAppointment extends React.Component {
             })
     }
 
+    closeAppointmentsToView() {
+        this.setState({
+            displayAppointmentsToView: false
+        })
+    }
+
+    openAppointmentsToView(date) {
+        const dateToView = moment(date).format('YYYY-MM-DD')
+
+        const { allServices, staffList } = this.state
+
+        adminActions.getAppointmentByDate(dateToView).then((querySnapshot) => {
+            const appointments = querySnapshot.docs.map((doc) => doc.data())
+            const appointmentsToView = { 'date': dateToView, 'appointments': [] }
+
+            appointments.forEach((appointment) => {
+                const toView = {}
+
+                let selectService = undefined
+                const groups = Object.keys(allServices)
+                groups.forEach((group) => {
+                    const services = allServices[group]
+                    const service = services.find((s) => s.id === appointment.serviceId)
+                    if (service) {
+                        selectService = service
+                        return
+                    }
+                })
+
+                if (!selectService) {
+                    console.error(`unable to find service info for appointment: ${appointment.id}`)
+                    return
+                }
+
+                toView['id'] = appointment.id
+                toView['service'] = selectService.name
+
+                if (appointment.staffId) {
+                    const staff = staffList.find((staff) => staff.id === appointment.staffId)
+                    toView['staff'] = staff.name
+                } else {
+                    toView['staff'] = 'Anyone'
+                }
+
+                toView['start'] = appointment.start
+                toView['end'] = appointment.end
+                toView['customerName'] = appointment.customerName
+                toView['customerEmail'] = appointment.customerEmail
+                toView['customerPhone'] = appointment.customerPhone
+
+                appointmentsToView['appointments'].push(toView)
+            })
+            
+            const appointmentsToViewHeaders = ['Id', 'Service Name', 'Staff Name', 'Start Time', 'End Time', 'Customer Name', 'Customer Email', 'Customer Phone']
+
+            this.setState({
+                displayAppointmentsToView: true,
+                appointmentsToView: appointmentsToView,
+                appointmentsToViewHeaders: appointmentsToViewHeaders
+            })
+        })
+    }
+
     render() {
-        // TODO: reduce the time of availability
+        // TODO: reduce the time of calulating availability
 
         const { classes } = this.props
         const { setCustomerName, setCustomerEmail, setCustomerPhone, setServiceGroup, setServiceId, setStaffId, setDate, setTime, staffList, services, allServices, availabilities, appointments, submitEnabled } = this.state
+        const today = new Date()
 
         return (
-            <div className={classes.container}>
-                <Grid container spacing={16}>
+            <Grid container className={classes.container}>
+                <Hidden smDown>
                     <Grid item xs={2}>
                         <h3>Set Appointment</h3>
                         <form className={classes.container} noValidate>
@@ -347,12 +403,37 @@ class AdminAppointment extends React.Component {
                             </Button>
                         </form>
                     </Grid>
-
-                    <Grid item xs={10}>
-
+                </Hidden>
+                <Grid item>
+                    <Grid container justify='space-evenly' spacing={40}>
+                        <Hidden smDown>
+                            <Grid item>
+                            </Grid>
+                        </Hidden>
+                        <Grid item>
+                            <InfiniteCalendar
+                                theme={{
+                                    selectionColor: '#3f51b5',
+                                    weekdayColor: 'rgb(127, 95, 251)',
+                                    headerColor: '#3f51b5'
+                                }}
+                                width={(isMobile()) ? window.innerWidth * 0.9 : 650}
+                                height={window.innerHeight - 250}
+                                selected={today}
+                                minDate={today}
+                                onSelect={this.openAppointmentsToView}
+                            />
+                        </Grid>
                     </Grid>
                 </Grid>
-            </div>
+
+                <AppointmentSummary
+                    open={this.state.displayAppointmentsToView}
+                    appointmentsToView={this.state.appointmentsToView}
+                    appointmentsToViewHeaders={this.state.appointmentsToViewHeaders}
+                    onClose={this.closeAppointmentsToView}
+                />
+            </Grid>
         )
     }
 }

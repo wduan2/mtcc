@@ -21,6 +21,12 @@ export const getServices = () => {
     return database.collection('service').get()
 }
 
+export const getServiceById = (serviceId) => {
+    return database.collection('service')
+        .where('id', '==', serviceId)
+        .get()
+}
+
 export const setService = (group, name, duration, price, id = shortid.generate()) => {
     let service = Service(id, group, name, duration, price)
     service.updatedAt = firebase.firestore.FieldValue.serverTimestamp()

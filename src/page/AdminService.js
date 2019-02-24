@@ -1,6 +1,7 @@
 import Button from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
+import Hidden from '@material-ui/core/Hidden';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
@@ -8,6 +9,7 @@ import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import React from 'react';
 import * as adminActions from '../data/adminActions';
+import { isMobile } from './Screen';
 import CustomPaginationActionsTable from './Table';
 
 const styles = (theme) => ({
@@ -132,8 +134,8 @@ class AdminService extends React.Component {
         const { setServiceName, setServiceGroup, setServiceDuration, setServicePrice, delServiceId, serviceList, submitEnabled } = this.state
 
         return (
-            <div className={classes.container}>
-                <Grid container spacing={16}>
+            <Grid className={classes.container} container spacing={16}>
+                <Hidden smDown>
                     <Grid item xs={2}>
                         <h3>Set Service</h3>
                         <form className={classes.container} noValidate>
@@ -224,11 +226,11 @@ class AdminService extends React.Component {
                             </Button>
                         </form>
                     </Grid>
-                    <Grid item xs={10}>
-                        <CustomPaginationActionsTable headers={this.tableHeaders} rows={serviceList} />
-                    </Grid>
+                </Hidden>
+                <Grid item xs={(isMobile() ? 12 : 10)}>
+                    <CustomPaginationActionsTable headers={this.tableHeaders} rows={serviceList} />
                 </Grid>
-            </div >
+            </Grid>
         )
     }
 }

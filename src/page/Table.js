@@ -89,7 +89,10 @@ const styles = theme => ({
         marginTop: theme.spacing.unit * 3,
     },
     table: {
-        minWidth: 700,
+        minWidth: window.innerWidth * 0.9
+    },
+    tableCell: {
+        padding: '4px 30px 4px 15px'
     },
     tableWrapper: {
         overflowX: 'auto',
