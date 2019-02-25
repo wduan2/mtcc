@@ -15,7 +15,7 @@ export default class AppointmentSummary extends React.Component {
 
         return (
             <Dialog {...others}>
-                <DialogTitle >Appointmetns at {date}</DialogTitle>
+                <DialogTitle >Appointments at {date}</DialogTitle>
                 <CustomPaginationActionsTable headers={appointmentsToViewHeaders} rows={appointments} />
             </Dialog>
         );
